@@ -1,57 +1,58 @@
 ﻿#include <iostream>
+#include <vector>
 #include <string>
-#include "../include/vec3.h"
-#include "../include/ray.h"
+#include <fstream>
+#include "../include/parser.hpp"
+#include "../include/renderer.hpp"
 
-// Estrutura para configuracoes da renderizacao
-struct RenderConfig {
-    std::string inputFile;
-    std::string outputFile;
-    int width = 800;  // Padrao definido na especificacao
-    int height = 600; // Padrao definido na especificacao
-};
+void save_ppm(const std::string& filename, int width, int height, const std::vector<unsigned char>& data) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Erro ao salvar arquivo " << filename << std::endl;
+        return;
+    }
+
+    file << "P3\n" << width << " " << height << "\n255\n";
+    for (size_t i = 0; i < data.size(); i += 3) {
+        file << (int)data[i] << " " << (int)data[i+1] << " " << (int)data[i+2] << "\n";
+    }
+    file.close();
+}
 
 int main(int argc, char* argv[]) {
-    // Leitura de argumentos conforme especificacao 
+    // [cite: 46-48] Parâmetros de linha de comando
     if (argc < 3) {
         std::cerr << "Uso: " << argv[0] << " <input_scene.txt> <output_image.ppm> [width] [height]" << std::endl;
         return 1;
     }
 
-    RenderConfig config;
-    config.inputFile = argv[1];
-    config.outputFile = argv[2];
+    std::string input_file = argv[1];
+    std::string output_file = argv[2];
+    int width = 800;
+    int height = 600;
 
     if (argc >= 5) {
-        config.width = std::stoi(argv[3]);
-        config.height = std::stoi(argv[4]);
+        width = std::stoi(argv[3]);
+        height = std::stoi(argv[4]);
     }
 
-    std::cout << "Renderizando cena: " << config.inputFile << std::endl;
-    std::cout << "Saida: " << config.outputFile << " (" << config.width << "x" << config.height << ")" << std::endl;
-
-    // TODO: Chamar o Parser aqui para ler a cena
-    
-    // Exemplo de geracao de PPM simples (Degrade de teste)
-    // Redirecionar stdout para arquivo ou usar fstream
-    FILE *f = fopen(config.outputFile.c_str(), "w");
-    fprintf(f, "P3\n%d %d\n255\n", config.width, config.height);
-
-    for (int j = config.height - 1; j >= 0; --j) {
-        for (int i = 0; i < config.width; ++i) {
-            auto r = double(i) / (config.width - 1);
-            auto g = double(j) / (config.height - 1);
-            auto b = 0.25;
-
-            int ir = static_cast<int>(255.999 * r);
-            int ig = static_cast<int>(255.999 * g);
-            int ib = static_cast<int>(255.999 * b);
-
-            fprintf(f, "%d %d %d\n", ir, ig, ib);
-        }
+    // 1. Carregar Cena
+    Scene scene;
+    std::cout << "Lendo cena: " << input_file << "..." << std::endl;
+    if (!load_scene(input_file, scene)) {
+        return 1; // Erro ao ler
     }
-    fclose(f);
 
-    std::cout << "Concluido." << std::endl;
+    // 2. Renderizar
+    std::cout << "Renderizando imagem " << width << "x" << height << "..." << std::endl;
+    Renderer renderer;
+    std::vector<unsigned char> image_data;
+    renderer.render(scene, width, height, image_data);
+
+    // 3. Salvar
+    std::cout << "Salvando em: " << output_file << "..." << std::endl;
+    save_ppm(output_file, width, height, image_data);
+
+    std::cout << "Concluido!" << std::endl;
     return 0;
 }

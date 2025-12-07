@@ -1,0 +1,29 @@
+$gitignore = @"
+# --- Compilacao C++ ---
+obj/
+bin/
+*.o
+*.exe
+*.out
+*.dll
+
+# --- Saidas do Programa ---
+# Ignorar as imagens geradas para nao pesar o repositorio
+outputs/
+*.ppm
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- Sistema Operacional ---
+.DS_Store
+Thumbs.db
+
+# --- Ambientes Virtuais (Visto no seu terminal) ---
+venv/
+"@
+
+$gitignore | Out-File -FilePath ".gitignore" -Encoding UTF8
