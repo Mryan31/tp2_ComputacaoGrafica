@@ -1,7 +1,7 @@
-﻿#ifndef RAY_H
-#define RAY_H
+﻿#ifndef RAY_HPP
+#define RAY_HPP
 
-#include "vec3.h"
+#include "vec3.hpp"
 
 class ray {
 public:
@@ -16,11 +16,7 @@ public:
     vec3 direction() const { return dir; }
 
     vec3 at(double t) const {
-        // P(t) = A + t*B
-        // Retorna o ponto no raio no parametro t
-        // Voce precisa implementar a sobrecarga de operadores no vec3.h para isso funcionar:
-        // return orig + dir * t;
-        return orig; // Placeholder
+        return orig + t * dir;
     }
 };
 #endif
